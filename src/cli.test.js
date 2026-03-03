@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 import { rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { tasksToCSV } from "./cli.js";
+import { tasksToCSV, taskStats } from "./cli.js";
 
 const execFile = promisify(execFileCb);
 const TEST_HOME = join(tmpdir(), `relay-lab-cli-test-${Date.now()}`);
@@ -196,6 +196,51 @@ describe("cli", () => {
     const csv = tasksToCSV(tasks);
     const lines = csv.split("\n");
     assert.ok(lines[1].includes('"Say ""hello"""'));
+  });
+
+  it("should show stats with total, done, and pending counts", async () => {
+    await run("add", "Task 1");
+    await run("add", "Task 2");
+    await run("done", "1");
+    const { stdout } = await run("stats");
+    assert.ok(stdout.includes("Total: 2"));
+    assert.ok(stdout.includes("Done: 1"));
+    assert.ok(stdout.includes("Pending: 1"));
+  });
+
+  it("should show stats with priority breakdown", async () => {
+    await run("add", "-p", "high", "High task");
+    await run("add", "-p", "medium", "Med task");
+    await run("add", "-p", "low", "Low task");
+    const { stdout } = await run("stats");
+    assert.ok(stdout.includes("High: 1"));
+    assert.ok(stdout.includes("Medium: 1"));
+    assert.ok(stdout.includes("Low: 1"));
+  });
+
+  it("should show No tasks yet when empty", async () => {
+    const { stdout } = await run("stats");
+    assert.ok(stdout.includes("No tasks yet"));
+  });
+
+  it("taskStats returns correct counts for mixed tasks", () => {
+    const tasks = [
+      { id: 1, text: "A", done: true, priority: "high", createdAt: "" },
+      { id: 2, text: "B", done: false, priority: "medium", createdAt: "" },
+      { id: 3, text: "C", done: false, priority: "low", createdAt: "" },
+    ];
+    const result = taskStats(tasks);
+    assert.ok(result.includes("Total: 3"));
+    assert.ok(result.includes("Done: 1"));
+    assert.ok(result.includes("Pending: 2"));
+    assert.ok(result.includes("High: 1"));
+    assert.ok(result.includes("Medium: 1"));
+    assert.ok(result.includes("Low: 1"));
+  });
+
+  it("taskStats returns No tasks yet for empty array", () => {
+    const result = taskStats([]);
+    assert.ok(result.includes("No tasks yet"));
   });
 
   it("should sort by priority", async () => {
