@@ -142,4 +142,29 @@ describe("store", () => {
     `);
     assert.ok(result.includes("Invalid priority"));
   });
+
+  it("should add task with null dueDate by default", async () => {
+    const result = await runStore(`
+      const task = await add("No due date");
+      console.log(JSON.stringify(task.dueDate));
+    `);
+    assert.equal(result, "null");
+  });
+
+  it("should add task with explicit dueDate", async () => {
+    const result = await runStore(`
+      const task = await add("Report", "medium", "2026-03-10");
+      console.log(task.dueDate);
+    `);
+    assert.equal(result, "2026-03-10");
+  });
+
+  it("should persist dueDate in stored task", async () => {
+    const result = await runStore(`
+      await add("Persist date", "low", "2026-04-01");
+      const all = await getAll();
+      console.log(all[0].dueDate);
+    `);
+    assert.equal(result, "2026-04-01");
+  });
 });

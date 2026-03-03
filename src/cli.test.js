@@ -252,4 +252,57 @@ describe("cli", () => {
     assert.ok(lines[0].includes("High task"));
     assert.ok(lines[2].includes("Low task"));
   });
+
+  it("should add task with -d flag and show due date in output", async () => {
+    const { stdout } = await run("add", "-d", "2026-03-10", "Submit report");
+    assert.ok(stdout.includes("Submit report"));
+    assert.ok(stdout.includes("due: 2026-03-10"));
+  });
+
+  it("should add task with both -p and -d flags", async () => {
+    const { stdout } = await run("add", "-p", "high", "-d", "2026-03-15", "Urgent report");
+    assert.ok(stdout.includes("🔴"));
+    assert.ok(stdout.includes("Urgent report"));
+    assert.ok(stdout.includes("due: 2026-03-15"));
+  });
+
+  it("should add task with -d and -p flags in reverse order", async () => {
+    const { stdout } = await run("add", "-d", "2026-03-20", "-p", "low", "Low priority task");
+    assert.ok(stdout.includes("⚪"));
+    assert.ok(stdout.includes("due: 2026-03-20"));
+  });
+
+  it("should show due date in list for tasks that have one", async () => {
+    await run("add", "-d", "2026-03-10", "With due date");
+    await run("add", "No due date");
+    const { stdout } = await run("list");
+    assert.ok(stdout.includes("due: 2026-03-10"));
+    assert.ok(!stdout.includes("due: undefined"));
+  });
+
+  it("should omit due date in list for tasks without one", async () => {
+    await run("add", "No due date");
+    const { stdout } = await run("list");
+    assert.ok(!stdout.includes("due:"));
+  });
+
+  it("should sort by due date with --sort due (earliest first)", async () => {
+    await run("add", "-d", "2026-04-01", "April task");
+    await run("add", "-d", "2026-03-01", "March task");
+    await run("add", "-d", "2026-05-01", "May task");
+    const { stdout } = await run("list", "--sort", "due");
+    const lines = stdout.split("\n");
+    assert.ok(lines[0].includes("March task"));
+    assert.ok(lines[1].includes("April task"));
+    assert.ok(lines[2].includes("May task"));
+  });
+
+  it("should sort tasks without due date to the end with --sort due", async () => {
+    await run("add", "No due date");
+    await run("add", "-d", "2026-03-10", "Has due date");
+    const { stdout } = await run("list", "--sort", "due");
+    const lines = stdout.split("\n");
+    assert.ok(lines[0].includes("Has due date"));
+    assert.ok(lines[1].includes("No due date"));
+  });
 });
