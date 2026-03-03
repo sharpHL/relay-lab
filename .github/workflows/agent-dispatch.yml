@@ -9,6 +9,9 @@ jobs:
   dispatch:
     if: github.event.label.name == 'agent:ready'
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
