@@ -1,0 +1,61 @@
+name: Agent Dispatch
+
+# Trigger when an issue gets the "agent:ready" label
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  dispatch:
+    if: github.event.label.name == 'agent:ready'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract issue context
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          echo "title=$(gh issue view $ISSUE_NUMBER --json title --jq '.title')" >> $GITHUB_OUTPUT
+
+      - name: Log agent task
+        run: |
+          echo "🤖 Agent triggered for Issue #${{ steps.issue.outputs.number }}"
+          echo "   Title: ${{ steps.issue.outputs.title }}"
+          echo ""
+          echo "In production, this step would:"
+          echo "  1. Start a Claude Code session with: claude --print 'Pick up Issue #${{ steps.issue.outputs.number }}'"
+          echo "  2. Agent reads Issue body for context"
+          echo "  3. Agent creates branch, implements, tests, PRs"
+          echo "  4. PR auto-merges when CI passes"
+
+      # ──────────────────────────────────────────────
+      # PRODUCTION: Uncomment below when Claude Code
+      # is available as a GitHub Action or CLI runner
+      # ──────────────────────────────────────────────
+      #
+      # - name: Install Claude Code
+      #   run: npm install -g @anthropic-ai/claude-code
+      #
+      # - name: Run Agent
+      #   env:
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   run: |
+      #     claude --print "
+      #       You are working on repo sharpHL/relay-lab.
+      #       Pick up Issue #${{ steps.issue.outputs.number }}.
+      #       Read the Issue body for full context and acceptance criteria.
+      #       Create a feature branch, implement the changes, write tests,
+      #       ensure all tests pass, then create a PR with 'Closes #${{ steps.issue.outputs.number }}'.
+      #       Update the Issue body with HANDOFF status throughout.
+      #     "
+
+      - name: Update issue status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "🤖 **Agent Dispatch** triggered at $(date -u '+%Y-%m-%d %H:%M UTC'). Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
