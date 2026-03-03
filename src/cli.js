@@ -14,7 +14,8 @@ const USAGE = `Usage:
   task done <id>                        Toggle task done/undone
   task remove <id>                      Remove a task
   task search <keyword>                 Search tasks by keyword
-  task export                           Export all tasks to CSV (stdout)`;
+  task export                           Export all tasks to CSV (stdout)
+  task stats                            Show task summary statistics`;
 
 function csvField(value) {
   const str = String(value);
@@ -22,6 +23,21 @@ function csvField(value) {
     return '"' + str.replace(/"/g, '""') + '"';
   }
   return str;
+}
+
+export function taskStats(tasks) {
+  if (tasks.length === 0) {
+    return "No tasks yet.";
+  }
+  const done = tasks.filter((t) => t.done).length;
+  const pending = tasks.length - done;
+  const high = tasks.filter((t) => (t.priority || "medium") === "high").length;
+  const medium = tasks.filter((t) => (t.priority || "medium") === "medium").length;
+  const low = tasks.filter((t) => (t.priority || "medium") === "low").length;
+  return [
+    `Total: ${tasks.length}  Done: ${done}  Pending: ${pending}`,
+    `Priority — 🔴 High: ${high}  🟡 Medium: ${medium}  ⚪ Low: ${low}`,
+  ].join("\n");
 }
 
 export function tasksToCSV(tasks) {
@@ -105,6 +121,12 @@ async function main() {
     case "export": {
       const tasks = await getAll();
       console.log(tasksToCSV(tasks));
+      break;
+    }
+
+    case "stats": {
+      const tasks = await getAll();
+      console.log(taskStats(tasks));
       break;
     }
 
