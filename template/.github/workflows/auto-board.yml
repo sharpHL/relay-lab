@@ -1,0 +1,15 @@
+name: Auto Add to Board
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-to-board:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          # TODO: Replace with your Project Board URL
+          project-url: https://github.com/users/sharpHL/projects/2
+          github-token: ${{ secrets.BOARD_TOKEN }}
