@@ -49,9 +49,15 @@ jobs:
                 - Status → 🟢 Complete
                 - Check Acceptance Criteria boxes
                 - Fill: Completed, Decisions Made, Gotchas, Next Session Start Here
-            11. Create PR with "Closes #${{ github.event.issue.number }}"
+            11. Update CLAUDE.md if any of the following changed:
+                - New files, commands, or schema fields → update Architecture
+                - New conventions or patterns → update Rules or Code Style
+                - Key design decisions → append to "Key Decisions" with Issue number
+                - New pitfalls discovered → append to "Known Gotchas"
+            12. Create PR with "Closes #${{ github.event.issue.number }}"
 
             ## Critical
             - Read CLAUDE.md and existing code BEFORE writing anything
             - Follow existing patterns exactly (ESM, no external deps, test isolation via HOME override)
             - Never break existing tests
+            - CLAUDE.md is the project's long-term memory — keep it accurate and up to date
