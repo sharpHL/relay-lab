@@ -1,0 +1,16 @@
+{
+  "name": "relay-lab",
+  "version": "0.1.0",
+  "description": "CLI task manager for validating AI-driven development workflow",
+  "type": "module",
+  "bin": {
+    "task": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test src/**/*.test.js",
+    "start": "node src/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
