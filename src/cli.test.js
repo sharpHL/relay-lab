@@ -53,7 +53,7 @@ describe("cli", () => {
 
   it("should add a task", async () => {
     const { stdout } = await run("add", "Buy groceries");
-    assert.ok(stdout.includes("Added: #1 Buy groceries"));
+    assert.ok(stdout.includes("#1") && stdout.includes("Buy groceries"));
   });
 
   it("should error when adding without text", async () => {
@@ -134,5 +134,35 @@ describe("cli", () => {
     const { stderr, code } = await run("search");
     assert.ok(stderr.includes("keyword is required"));
     assert.notEqual(code, 0);
+  });
+
+  it("should add task with priority flag", async () => {
+    const { stdout } = await run("add", "-p", "high", "Urgent task");
+    assert.ok(stdout.includes("🔴"));
+    assert.ok(stdout.includes("Urgent task"));
+  });
+
+  it("should default to medium priority", async () => {
+    await run("add", "Normal task");
+    const { stdout } = await run("list");
+    assert.ok(stdout.includes("🟡"));
+  });
+
+  it("should show priority icons in list", async () => {
+    await run("add", "-p", "high", "High");
+    await run("add", "-p", "low", "Low");
+    const { stdout } = await run("list");
+    assert.ok(stdout.includes("🔴"));
+    assert.ok(stdout.includes("⚪"));
+  });
+
+  it("should sort by priority", async () => {
+    await run("add", "-p", "low", "Low task");
+    await run("add", "-p", "high", "High task");
+    await run("add", "-p", "medium", "Medium task");
+    const { stdout } = await run("list", "--sort", "priority");
+    const lines = stdout.split("\n");
+    assert.ok(lines[0].includes("High task"));
+    assert.ok(lines[2].includes("Low task"));
   });
 });
