@@ -5,10 +5,11 @@ import { getAll, add, remove, toggle } from "./store.js";
 const [command, ...args] = process.argv.slice(2);
 
 const USAGE = `Usage:
-  task add <text>     Add a new task
-  task list           List all tasks
-  task done <id>      Toggle task done/undone
-  task remove <id>    Remove a task`;
+  task add <text>       Add a new task
+  task list             List all tasks
+  task done <id>        Toggle task done/undone
+  task remove <id>      Remove a task
+  task search <keyword> Search tasks by keyword`;
 
 async function main() {
   switch (command) {
@@ -64,6 +65,27 @@ async function main() {
         process.exit(1);
       }
       console.log(`Removed: #${task.id} ${task.text}`);
+      break;
+    }
+
+    case "search": {
+      const keyword = args.join(" ");
+      if (!keyword) {
+        console.error("Error: search keyword is required.\n" + USAGE);
+        process.exit(1);
+      }
+      const tasks = await getAll();
+      const matches = tasks.filter((t) =>
+        t.text.toLowerCase().includes(keyword.toLowerCase())
+      );
+      if (matches.length === 0) {
+        console.log(`No tasks matching "${keyword}".`);
+        break;
+      }
+      for (const t of matches) {
+        const mark = t.done ? "✓" : " ";
+        console.log(`  [${mark}] #${t.id}  ${t.text}`);
+      }
       break;
     }
 
