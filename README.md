@@ -1,4 +1,4 @@
-# relay-lab
+# relay-lab [![CI](https://github.com/sharpHL/relay-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/sharpHL/relay-lab/actions/workflows/ci.yml)
 
 A simple CLI task manager — experimental project for validating the continuous AI-driven development workflow.
 
