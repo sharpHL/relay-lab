@@ -29,23 +29,29 @@ jobs:
           label_trigger: "agent:ready"
           claude_args: "--dangerously-skip-permissions"
           prompt: |
-            You are an autonomous coding agent. Your task is to implement Issue #${{ github.event.issue.number }}.
+            You are an autonomous coding agent. Read CLAUDE.md first for project rules and architecture.
+
+            ## Task
+            Implement Issue #${{ github.event.issue.number }}.
+            Read the Issue body with `gh issue view ${{ github.event.issue.number }}` for full context.
 
             ## Workflow
-            1. Read the Issue body for full context and acceptance criteria
-            2. Create a feature branch: feat/${{ github.event.issue.number }}-<short-name>
-            3. Update the Issue body status to 🟡 In Progress using gh issue edit
-            4. Implement the changes described in the Issue
-            5. Write unit tests for all new functionality
-            6. Run npm test and ensure ALL tests pass
-            7. Commit with conventional commit messages
-            8. Update the Issue body with HANDOFF:
-               - Status → 🟢 Complete
-               - Check all Acceptance Criteria boxes
-               - Fill in: Completed, Decisions Made, Gotchas, Next Session Start Here
-            9. Create a PR with "Closes #${{ github.event.issue.number }}" in the body
+            1. Read CLAUDE.md for project conventions
+            2. Read the Issue body for acceptance criteria and technical notes
+            3. Create branch: feat/${{ github.event.issue.number }}-<short-name>
+            4. Update Issue body status → 🟡 In Progress (via gh issue edit)
+            5. Read existing code referenced in Technical Notes before writing
+            6. Implement changes following existing patterns
+            7. Write unit tests following existing test patterns
+            8. Run `npm test` — ALL tests must pass (existing + new)
+            9. Commit with conventional commits (feat:/fix:)
+            10. Update Issue body HANDOFF:
+                - Status → 🟢 Complete
+                - Check Acceptance Criteria boxes
+                - Fill: Completed, Decisions Made, Gotchas, Next Session Start Here
+            11. Create PR with "Closes #${{ github.event.issue.number }}"
 
-            ## Rules
-            - Zero external dependencies — use only Node.js built-ins
-            - Every change must have tests
-            - All existing tests must continue to pass
+            ## Critical
+            - Read CLAUDE.md and existing code BEFORE writing anything
+            - Follow existing patterns exactly (ESM, no external deps, test isolation via HOME override)
+            - Never break existing tests
