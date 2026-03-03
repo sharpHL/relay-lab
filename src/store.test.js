@@ -119,4 +119,27 @@ describe("store", () => {
     `);
     assert.equal(result, "null");
   });
+
+  it("should add task with default medium priority", async () => {
+    const result = await runStore(`
+      const task = await add("Test priority");
+      console.log(task.priority);
+    `);
+    assert.equal(result, "medium");
+  });
+
+  it("should add task with explicit priority", async () => {
+    const result = await runStore(`
+      const task = await add("Urgent", "high");
+      console.log(task.priority);
+    `);
+    assert.equal(result, "high");
+  });
+
+  it("should reject invalid priority", async () => {
+    const result = await runStore(`
+      try { await add("Bad", "critical"); } catch(e) { console.log(e.message); }
+    `);
+    assert.ok(result.includes("Invalid priority"));
+  });
 });
