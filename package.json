@@ -7,7 +7,7 @@
     "task": "./src/cli.js"
   },
   "scripts": {
-    "test": "node --test src/**/*.test.js",
+    "test": "node --test src/store.test.js src/cli.test.js",
     "start": "node src/cli.js"
   },
   "engines": {
