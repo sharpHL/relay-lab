@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { tasksToCSV } from "./cli.js";
 
 const execFile = promisify(execFileCb);
 const TEST_HOME = join(tmpdir(), `relay-lab-cli-test-${Date.now()}`);
@@ -154,6 +155,47 @@ describe("cli", () => {
     const { stdout } = await run("list");
     assert.ok(stdout.includes("🔴"));
     assert.ok(stdout.includes("⚪"));
+  });
+
+  it("should export tasks to CSV with header", async () => {
+    await run("add", "-p", "high", "Buy groceries");
+    await run("add", "Clean house");
+    const { stdout } = await run("export");
+    const lines = stdout.split("\n");
+    assert.equal(lines[0], "id,text,priority,done,createdAt");
+    assert.ok(lines[1].startsWith("1,Buy groceries,high,false,"));
+    assert.ok(lines[2].startsWith("2,Clean house,medium,false,"));
+  });
+
+  it("should export empty CSV with only header when no tasks", async () => {
+    const { stdout } = await run("export");
+    assert.equal(stdout, "id,text,priority,done,createdAt");
+  });
+
+  it("should export done status correctly in CSV", async () => {
+    await run("add", "Test task");
+    await run("done", "1");
+    const { stdout } = await run("export");
+    const lines = stdout.split("\n");
+    assert.ok(lines[1].includes(",true,"));
+  });
+
+  it("should quote CSV fields that contain commas", async () => {
+    const tasks = [
+      { id: 1, text: "Buy milk, eggs", priority: "low", done: false, createdAt: "2024-01-01T00:00:00.000Z" },
+    ];
+    const csv = tasksToCSV(tasks);
+    const lines = csv.split("\n");
+    assert.ok(lines[1].includes('"Buy milk, eggs"'));
+  });
+
+  it("should escape double quotes in CSV fields", async () => {
+    const tasks = [
+      { id: 1, text: 'Say "hello"', priority: "medium", done: false, createdAt: "2024-01-01T00:00:00.000Z" },
+    ];
+    const csv = tasksToCSV(tasks);
+    const lines = csv.split("\n");
+    assert.ok(lines[1].includes('"Say ""hello"""'));
   });
 
   it("should sort by priority", async () => {

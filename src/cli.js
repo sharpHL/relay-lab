@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { getAll, add, remove, toggle } from "./store.js";
+import { fileURLToPath } from "node:url";
 
 const [command, ...args] = process.argv.slice(2);
 
@@ -12,7 +13,24 @@ const USAGE = `Usage:
   task list [--sort priority]           List all tasks
   task done <id>                        Toggle task done/undone
   task remove <id>                      Remove a task
-  task search <keyword>                 Search tasks by keyword`;
+  task search <keyword>                 Search tasks by keyword
+  task export                           Export all tasks to CSV (stdout)`;
+
+function csvField(value) {
+  const str = String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+export function tasksToCSV(tasks) {
+  const header = "id,text,priority,done,createdAt";
+  const rows = tasks.map((t) =>
+    [t.id, t.text, t.priority, t.done, t.createdAt].map(csvField).join(",")
+  );
+  return [header, ...rows].join("\n");
+}
 
 async function main() {
   switch (command) {
@@ -84,6 +102,12 @@ async function main() {
       break;
     }
 
+    case "export": {
+      const tasks = await getAll();
+      console.log(tasksToCSV(tasks));
+      break;
+    }
+
     case "search": {
       const keyword = args.join(" ");
       if (!keyword) {
@@ -119,4 +143,6 @@ async function main() {
   }
 }
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main();
+}
