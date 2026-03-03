@@ -1,6 +1,5 @@
 name: Agent Dispatch
 
-# Trigger when an issue gets the "agent:ready" label
 on:
   issues:
     types: [labeled]
@@ -23,34 +22,28 @@ jobs:
           node-version: 20
 
       - name: Run Claude Code Agent
-        id: agent
-        uses: anthropics/claude-code-action@v2
+        uses: anthropics/claude-code-action@v1.0.66
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          direct_prompt: |
-            You are an autonomous coding agent working on the sharpHL/relay-lab repository.
-
-            ## Your Task
-            Pick up Issue #${{ github.event.issue.number }}.
+          label_trigger: "agent:ready"
+          prompt: |
+            You are an autonomous coding agent. Your task is to implement Issue #${{ github.event.issue.number }}.
 
             ## Workflow
-            1. Read the Issue body with `gh issue view ${{ github.event.issue.number }}` for full context and acceptance criteria
-            2. Create a feature branch: `feat/${{ github.event.issue.number }}-<short-name>`
-            3. Update the Issue body status to 🟡 In Progress using `gh issue edit`
+            1. Read the Issue body for full context and acceptance criteria
+            2. Create a feature branch: feat/${{ github.event.issue.number }}-<short-name>
+            3. Update the Issue body status to 🟡 In Progress using gh issue edit
             4. Implement the changes described in the Issue
             5. Write unit tests for all new functionality
-            6. Run `npm test` and ensure ALL tests pass
+            6. Run npm test and ensure ALL tests pass
             7. Commit with conventional commit messages
-            8. Update the Issue body with HANDOFF information:
+            8. Update the Issue body with HANDOFF:
                - Status → 🟢 Complete
                - Check all Acceptance Criteria boxes
                - Fill in: Completed, Decisions Made, Gotchas, Next Session Start Here
-            9. Push the branch and create a PR with `Closes #${{ github.event.issue.number }}` in the body
+            9. Create a PR with "Closes #${{ github.event.issue.number }}" in the body
 
             ## Rules
             - Zero external dependencies — use only Node.js built-ins
             - Every change must have tests
             - All existing tests must continue to pass
-            - Follow the existing code style (ESM, no semicolons in tests)
-          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
-          timeout_minutes: 30
