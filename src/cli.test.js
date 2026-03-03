@@ -113,4 +113,26 @@ describe("cli", () => {
     const { stdout } = await run("list");
     assert.ok(stdout.includes("✓"));
   });
+
+  it("should search tasks by keyword (case-insensitive)", async () => {
+    await run("add", "Buy groceries");
+    await run("add", "Clean house");
+    await run("add", "Buy milk");
+    const { stdout } = await run("search", "buy");
+    assert.ok(stdout.includes("Buy groceries"));
+    assert.ok(stdout.includes("Buy milk"));
+    assert.ok(!stdout.includes("Clean house"));
+  });
+
+  it("should show no matches message", async () => {
+    await run("add", "Something");
+    const { stdout } = await run("search", "xyz");
+    assert.ok(stdout.includes("No tasks matching"));
+  });
+
+  it("should error when search without keyword", async () => {
+    const { stderr, code } = await run("search");
+    assert.ok(stderr.includes("keyword is required"));
+    assert.notEqual(code, 0);
+  });
 });
