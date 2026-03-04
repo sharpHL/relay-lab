@@ -2,17 +2,12 @@
 
 CLI task manager (Node.js, ESM, zero external dependencies).
 
-## Architecture
+## Docs Index
 
-```
-src/store.js   — data layer: load, save, getAll, add, remove, toggle
-                 data file: ~/.relay-lab/tasks.json
-                 schema: { nextId: number, tasks: [{ id, text, done, priority, dueDate, createdAt }] }
-
-src/cli.js     — CLI entry: process.argv + switch routing
-                 commands: add, list, done, remove, search, export, stats
-                 flags: -p (priority), -d (due date), --sort (priority|due)
-```
+| Topic | File | When to read |
+|-------|------|-------------|
+| Architecture & schema | `docs/ARCHITECTURE.md` | Before writing any code |
+| Decision records | `docs/decisions/` | When you need "why" context |
 
 ## Rules
 
@@ -24,23 +19,17 @@ src/cli.js     — CLI entry: process.argv + switch routing
 
 ## HANDOFF Protocol
 
-When working on an Issue, always update the Issue body:
-- Set Status to 🟡 In Progress when starting
-- Set Status to 🟢 Complete when done
-- Fill in: Completed, Decisions Made, Gotchas, Next Session Start Here
-- Check all Acceptance Criteria boxes that are satisfied
+When working on an Issue:
+1. Update Issue body status → 🟡 In Progress
+2. Implement + test
+3. Update Issue body → 🟢 Complete (fill Completed, Decisions Made, Gotchas, Next Session Start Here)
 
-After completing an Issue, update THIS FILE (CLAUDE.md) if any of the following changed:
-- Architecture section: new files, new commands, new fields in schema
-- Rules section: new conventions discovered or established
-- Decisions section: choices that affect future development
-- Gotchas section: pitfalls that future agents should know
-
-This ensures knowledge accumulates across Issues, not just within each Issue.
+After completing an Issue, update project docs if needed:
+- `docs/ARCHITECTURE.md` — new files, commands, schema fields
+- `docs/decisions/NNN-topic.md` — new architectural decision (add index row below)
+- Known Gotchas below — new pitfalls
 
 ## Key Decisions
-
-Decisions are archived in `docs/decisions/`. Read relevant ones when you need context on why something was built a certain way.
 
 | # | Topic | File |
 |---|-------|------|
@@ -49,17 +38,8 @@ Decisions are archived in `docs/decisions/`. Read relevant ones when you need co
 | 003 | Test isolation via HOME override | `docs/decisions/003-test-isolation.md` |
 | 004 | Presentation functions in cli.js | `docs/decisions/004-presentation-in-cli.md` |
 
-When making a new architectural decision, create a new file in `docs/decisions/` and add a row to this table.
-
 ## Known Gotchas
 
 - CI: use explicit test file paths in package.json, glob doesn't expand on Ubuntu
 - GitHub: OAuth token needs `workflow` scope to push workflow files
-- Schema: tasks without `priority` or `dueDate` must fallback with `|| default`
-
-## Code Style
-
-- No semicolons in test files
-- Use `const` by default, `let` only when reassignment needed
-- Error messages: `"Error: <description>"` format
-- CLI output: `"Added: #1 text"`, `"Removed: #1 text"` format
+- Schema: tasks without new fields must fallback with `|| default`
