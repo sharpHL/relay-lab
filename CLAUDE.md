@@ -38,22 +38,24 @@ After completing an Issue, update THIS FILE (CLAUDE.md) if any of the following 
 
 This ensures knowledge accumulates across Issues, not just within each Issue.
 
-## Key Decisions (accumulated from Issues)
+## Key Decisions
 
-- Data format uses `nextId` counter in file, not max(id) scan (#1)
-- `done` command toggles (not one-way), more useful for corrections (#2)
-- No external arg parser — `process.argv` + switch is sufficient (#2)
-- Search uses simple `String.includes`, no regex (#3)
-- Priority stored as string not number — more readable in JSON (#9)
-- Existing tasks without new fields fallback gracefully (e.g. `priority || "medium"`) (#9)
-- Presentation functions (export, stats) live in cli.js not store.js (#12, #14)
-- Entry-point guard `fileURLToPath(import.meta.url)` for testable exports (#12)
+Decisions are archived in `docs/decisions/`. Read relevant ones when you need context on why something was built a certain way.
+
+| # | Topic | File |
+|---|-------|------|
+| 001 | Data format & ID generation | `docs/decisions/001-data-format.md` |
+| 002 | No external dependencies | `docs/decisions/002-no-external-deps.md` |
+| 003 | Test isolation via HOME override | `docs/decisions/003-test-isolation.md` |
+| 004 | Presentation functions in cli.js | `docs/decisions/004-presentation-in-cli.md` |
+
+When making a new architectural decision, create a new file in `docs/decisions/` and add a row to this table.
 
 ## Known Gotchas
 
-- CI glob `src/**/*.test.js` doesn't expand on Ubuntu — use explicit file list in package.json
-- OAuth token needs `workflow` scope to push .github/workflows/ files
-- Tasks without `priority` or `dueDate` field must be handled with `|| default` in display code
+- CI: use explicit test file paths in package.json, glob doesn't expand on Ubuntu
+- GitHub: OAuth token needs `workflow` scope to push workflow files
+- Schema: tasks without `priority` or `dueDate` must fallback with `|| default`
 
 ## Code Style
 

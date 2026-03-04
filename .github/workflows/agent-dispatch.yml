@@ -49,11 +49,11 @@ jobs:
                 - Status → 🟢 Complete
                 - Check Acceptance Criteria boxes
                 - Fill: Completed, Decisions Made, Gotchas, Next Session Start Here
-            11. Update CLAUDE.md if any of the following changed:
-                - New files, commands, or schema fields → update Architecture
-                - New conventions or patterns → update Rules or Code Style
-                - Key design decisions → append to "Key Decisions" with Issue number
-                - New pitfalls discovered → append to "Known Gotchas"
+            11. Update project knowledge:
+                - CLAUDE.md Architecture: update if new files, commands, or schema fields added
+                - CLAUDE.md Known Gotchas: add if new pitfalls discovered
+                - docs/decisions/NNN-topic.md: create new file for architectural decisions, add row to CLAUDE.md table
+                - Keep CLAUDE.md concise — it's an index, not a log
             12. Create PR with "Closes #${{ github.event.issue.number }}"
 
             ## Critical
