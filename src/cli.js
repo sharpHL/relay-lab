@@ -9,13 +9,13 @@ const PRIORITY_ICONS = { high: "🔴", medium: "🟡", low: "⚪" };
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
 
 const USAGE = `Usage:
-  task add [-p high|medium|low] <text>  Add a new task (default: medium)
-  task list [--sort priority]           List all tasks
-  task done <id>                        Toggle task done/undone
-  task remove <id>                      Remove a task
-  task search <keyword>                 Search tasks by keyword
-  task export                           Export all tasks to CSV (stdout)
-  task stats                            Show task summary statistics`;
+  task add [-p high|medium|low] [-d YYYY-MM-DD] <text>  Add a new task (default: medium)
+  task list [--sort priority|due]                        List all tasks
+  task done <id>                                         Toggle task done/undone
+  task remove <id>                                       Remove a task
+  task search <keyword>                                  Search tasks by keyword
+  task export                                            Export all tasks to CSV (stdout)
+  task stats                                             Show task summary statistics`;
 
 function csvField(value) {
   const str = String(value);
@@ -52,19 +52,28 @@ async function main() {
   switch (command) {
     case "add": {
       let priority = "medium";
+      let dueDate = null;
       const remaining = [...args];
-      if (remaining[0] === "-p" && remaining[1]) {
-        priority = remaining[1];
-        remaining.splice(0, 2);
+      while (remaining.length > 0 && remaining[0].startsWith("-")) {
+        if (remaining[0] === "-p" && remaining[1]) {
+          priority = remaining[1];
+          remaining.splice(0, 2);
+        } else if (remaining[0] === "-d" && remaining[1]) {
+          dueDate = remaining[1];
+          remaining.splice(0, 2);
+        } else {
+          break;
+        }
       }
       const text = remaining.join(" ");
       if (!text) {
         console.error("Error: task text is required.\n" + USAGE);
         process.exit(1);
       }
-      const task = await add(text, priority);
+      const task = await add(text, priority, dueDate);
       const icon = PRIORITY_ICONS[task.priority];
-      console.log(`Added: ${icon} #${task.id} ${task.text}`);
+      const duePart = task.dueDate ? ` (due: ${task.dueDate})` : "";
+      console.log(`Added: ${icon} #${task.id} ${task.text}${duePart}`);
       break;
     }
 
@@ -74,15 +83,25 @@ async function main() {
         console.log("No tasks yet. Use `task add <text>` to create one.");
         break;
       }
-      if (args.includes("--sort") && args.includes("priority")) {
+      const sortIndex = args.indexOf("--sort");
+      const sortBy = sortIndex !== -1 ? args[sortIndex + 1] : null;
+      if (sortBy === "priority") {
         tasks = [...tasks].sort(
           (a, b) => (PRIORITY_ORDER[a.priority || "medium"] ?? 1) - (PRIORITY_ORDER[b.priority || "medium"] ?? 1)
         );
+      } else if (sortBy === "due") {
+        tasks = [...tasks].sort((a, b) => {
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        });
       }
       for (const t of tasks) {
         const mark = t.done ? "✓" : " ";
         const icon = PRIORITY_ICONS[t.priority || "medium"];
-        console.log(`  [${mark}] ${icon} #${t.id}  ${t.text}`);
+        const duePart = t.dueDate ? `  due: ${t.dueDate}` : "";
+        console.log(`  [${mark}] ${icon} #${t.id}  ${t.text}${duePart}`);
       }
       break;
     }

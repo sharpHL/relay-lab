@@ -32,7 +32,7 @@ export async function getAll() {
 
 const VALID_PRIORITIES = ["high", "medium", "low"];
 
-export async function add(text, priority = "medium") {
+export async function add(text, priority = "medium", dueDate = null) {
   if (!VALID_PRIORITIES.includes(priority)) {
     throw new Error(`Invalid priority: ${priority}. Use: ${VALID_PRIORITIES.join(", ")}`);
   }
@@ -42,6 +42,7 @@ export async function add(text, priority = "medium") {
     text,
     done: false,
     priority,
+    dueDate,
     createdAt: new Date().toISOString(),
   };
   data.tasks.push(task);
